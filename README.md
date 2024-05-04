@@ -7,6 +7,8 @@
 
 Laravel-FCM is an easy to use package working with both Laravel and Lumen for sending push notification with [Firebase Cloud Messaging](https://firebase.google.com/docs/cloud-messaging/) (FCM).
 
+UPDATE: Migrate from legacy FCM APIs to HTTP v1
+
 It currently **only supports HTTP protocol** for :
 
 - sending a downstream message to one or multiple devices
@@ -21,7 +23,7 @@ It currently **only supports HTTP protocol** for :
 To get the latest version of Laravel-FCM on your project, require it from "composer":
 
 
-	$ composer require apility/laravel-fcm
+	$ composer require gavinlaw91/laravel-fcm
 
 
 Or you can add it directly in your composer.json file:
@@ -29,7 +31,7 @@ Or you can add it directly in your composer.json file:
 ```json
 {
     "require": {
-        "apility/laravel-fcm": "^1.4.*"
+        "gavinlaw91/laravel-fcm": "^1.4.*"
     }
 }
 ```
@@ -94,7 +96,11 @@ In your `.env` file, add the server key and the secret key for the Firebase Clou
 ```php
 FCM_SERVER_KEY=my_secret_server_key
 FCM_SENDER_ID=my_secret_sender_id
+FCM_PROJECT_ID=my_project_id
+FCM_ENDPOINT_URL=fcm_endpoint_url // https://fcm.googleapis.com/v1/projects/{project-id}/messages:send
 ```
+
+FCM_PROJECT_ID is optional if you have already include the FCM_ENDPOINT_URL with the project id in the URL
 
 To get these keys, you must create a new application on the [firebase cloud messaging console](https://console.firebase.google.com/).
 
