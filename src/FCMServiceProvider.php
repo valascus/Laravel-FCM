@@ -41,9 +41,11 @@ class FCMServiceProvider extends ServiceProvider
 
         $this->app->bind('fcm.sender', function ($app) {
             $client = $app[ 'fcm.client' ];
+            $project_id = $app[ 'config' ]->get('fcm.http.project_id');
             $url = $app[ 'config' ]->get('fcm.http.server_send_url');
+            $combined_url = str_replace("{project-id}", $project_id, $url);
 
-            return new FCMSender($client, $url);
+            return new FCMSender($client, $combined_url);
         });
     }
 

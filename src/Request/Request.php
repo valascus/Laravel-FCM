@@ -74,17 +74,85 @@ class Request extends BaseRequest
      */
     protected function buildBody()
     {
+        $preFormatNotification = $this->getNotification();
+        $preFormatOptions = $this->getOptions();
+
+        if($preFormatOptions['priority'] == 1) {
+            $android_priority = 'NORMAL';
+            $apn_priority = 1;
+        } elseif($preFormatOptions['priority'] == 'HIGH' || $preFormatOptions['priority'] == 10) {
+            $android_priority = 'HIGH';
+            $apn_priority = 10;
+        } else {
+            $android_priority = 'NORMAL';
+            $apn_priority = 5;
+        }
+        
         $message = [
-            'to' => $this->getTo(),
-            'registration_ids' => $this->getRegistrationIds(),
-            'notification' => $this->getNotification(),
-            'data' => $this->getData(),
+            'message' => [
+                'token' => $this->getTo(),
+                'tokens' => $this->getRegistrationIds(),
+                'topic' => $this->getTopic(),
+                'notification' => [
+                    'title' => $preFormatNotification['title'],
+                    'body' => $preFormatNotification['body'],
+                ],
+                'data' => $this->getData(),
+                'android' => [
+                    'collapse_key' => $preFormatOptions['collapse_key'],
+                    'priority' => $android_priority, // NORMAL | HIGH
+                    'ttl' => $preFormatOptions['time_to_live'],
+                    'restricted_package_name' => $preFormatOptions['restricted_package_name'],
+                    'notification' => [
+                        'channel_id' => $preFormatNotification['android_channel_id'],
+                        'icon' => $preFormatNotification['icon'],
+                        'sound' => $preFormatNotification['sound'] ?? "default",
+                        'tag' => $preFormatNotification['tag'],
+                        'color' => $preFormatNotification['color'],
+                        'click_action' => $preFormatNotification['click_action'],
+                        'body_loc_key' => $preFormatNotification['body_loc_key'],
+                        'body_loc_args' => $preFormatNotification['body_loc_args'],
+                        'title_loc_key' => $preFormatNotification['title_loc_key'],
+                        'title_loc_args' => $preFormatNotification['title_loc_args'],
+                    ]
+                ],
+                "apns" => [
+                    "payload" => [
+                        "aps" => [
+                            "badge" => $preFormatNotification['badge'],
+                            "sound" => $preFormatNotification['sound'] ?? "default", // Use "default" or specify a sound file
+                            "content-available" => $preFormatOptions['content_available'], // Use 1 for true
+                            'mutable-content' => $preFormatOptions['mutable_content'],
+                            "alert" => [
+                                "loc-key" => $preFormatNotification['body_loc_key'],
+                                "loc-args" => $preFormatNotification['body_loc_args'],
+                                "title-loc-key" => $preFormatNotification['title_loc_key'],
+                                "title-loc-args" => $preFormatNotification['title_loc_args'],
+                            ],
+                        ]
+                    ],
+                    "headers" => [
+                        "apns-priority" => $apn_priority, // 1 | 5 | 10
+                    ]
+                ],
+            ]
         ];
 
-        $message = array_merge($message, $this->getOptions());
-
         // remove null entries
-        return array_filter($message);
+        return arrayFilterRecursive($message);
+    }
+
+    protected function arrayFilterRecursive($input) {
+        foreach ($input as &$value) {
+            if (is_array($value)) {
+                $value = array_filter_recursive($value);
+            }
+        }
+    
+        // Return filtered array, you can also use array_filter($input) without a callback to remove all falsy values
+        return array_filter($input, function($value) {
+            return !is_null($value);
+        });
     }
 
     /**
@@ -101,6 +169,22 @@ class Request extends BaseRequest
         }
 
         return $to;
+    }
+
+    /**
+     * get topic key transformed.
+     *
+     * @return array|null|string
+     */
+    protected function getTopic()
+    {
+        $topic = null;
+
+        if ($this->topic && $this->topic->hasOnlyOneTopic()) {
+            $topic = $this->topic->build();
+        }
+
+        return $topic;
     }
 
     /**
