@@ -95,7 +95,7 @@ class Request extends BaseRequest
     protected function arrayFilterRecursive($input) {
         foreach ($input as &$value) {
             if (is_array($value)) {
-                $value = array_filter_recursive($value);
+                $value = $this->arrayFilterRecursive($value);
             }
         }
     
