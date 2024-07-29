@@ -76,20 +76,6 @@ class Request extends BaseRequest
     {
         $preFormatNotification = $this->getNotification();
         $preFormatOptions = $this->getOptions();
-
-        if(!isset($preFormatOptions['priority'])) {
-            $android_priority = 'NORMAL';
-            $apn_priority = 5;
-        } else if($preFormatOptions['priority'] == 1) {
-            $android_priority = 'NORMAL';
-            $apn_priority = 1;
-        } elseif($preFormatOptions['priority'] == 'HIGH' || $preFormatOptions['priority'] == 10) {
-            $android_priority = 'HIGH';
-            $apn_priority = 10;
-        } else {
-            $android_priority = 'NORMAL';
-            $apn_priority = 5;
-        }
         
         $message = [
             'message' => [
@@ -103,7 +89,7 @@ class Request extends BaseRequest
         ];
 
         // remove null entries
-        return arrayFilterRecursive($message);
+        return $this->arrayFilterRecursive($message);
     }
 
     protected function arrayFilterRecursive($input) {
