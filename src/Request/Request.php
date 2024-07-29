@@ -77,7 +77,10 @@ class Request extends BaseRequest
         $preFormatNotification = $this->getNotification();
         $preFormatOptions = $this->getOptions();
 
-        if($preFormatOptions['priority'] == 1) {
+        if(!isset($preFormatOptions['priority')) {
+            $android_priority = 'NORMAL';
+            $apn_priority = 5;
+        } else if($preFormatOptions['priority'] == 1) {
             $android_priority = 'NORMAL';
             $apn_priority = 1;
         } elseif($preFormatOptions['priority'] == 'HIGH' || $preFormatOptions['priority'] == 10) {
